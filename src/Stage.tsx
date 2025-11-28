@@ -1,3 +1,4 @@
+// stages/stage.tsx
 import { ReactElement } from "react";
 import { StageBase, StageResponse, InitialData, Message } from "@chub-ai/stages-ts";
 import { LoadResponse } from "@chub-ai/stages-ts/dist/types/load";
@@ -14,11 +15,11 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     super(data);
     const { users, characters, messageState } = data;
 
+    // Initialize state
     this.myInternalState = messageState || {
       stage: 'white',
       counters: { white: 0, green: 0, purple: 0, golden: 0, red: 0 },
-      affection: 0,
-      secretUnlocked: false
+      affection: 0
     };
 
     this.myInternalState.numUsers = Object.keys(users).length;
@@ -26,95 +27,76 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
   }
 
   async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
-    return { success: true, error: null, initState: null, chatState: null };
+    return { success: true };
   }
 
   async setState(state: MessageStateType): Promise<void> {
-    if (state != null) this.myInternalState = { ...this.myInternalState, ...state };
+    if (state) this.myInternalState = { ...this.myInternalState, ...state };
   }
 
-  // --- Stage words ---
+  // Stage words (example; expand as needed)
   stageWords = {
-    white: ["Hey cutie, come cuddle with me.", "Made your favorite snacks, wanna sit on my lap?", "Tell me everything about your day, baby."],
-    green: ["Aww my sweet angel, let big sis hold you tight.", "You did so good today, I’m proud of you.", "Come rest on my chest, let me stroke your hair."],
-    purple: ["You’d look so pretty in a tiny skirt, princess.", "Keep acting shy, it makes me want you.", "Call me big sis again, it drives me wild."],
-    golden: ["Open wide, princess — time for your daily pill.", "Cage locked forever. That clitty belongs to Mommy now.", "Bend over, stretching you tonight."],
-    red: ["On your knees, worthless sissy cum-rag.", "Your locked dicklet drips while I slap your chin.", "I’m addicted to filling you every hour.", "Spread those cheeks, cheap whore."]
+    white: { adjectives: ["friendly","happy"], nouns: ["day","chat"], verbs: ["talk","smile"] },
+    green: { adjectives: ["warm","sweet"], nouns: ["friend","moment"], verbs: ["enjoy","share"] },
+    purple: { adjectives: ["naughty","flirty"], nouns: ["lover","partner"], verbs: ["tease","kiss"] },
+    golden: { adjectives: ["affectionate","bold"], nouns: ["partner","dom"], verbs: ["kiss","caress"] },
+    red: { adjectives: ["obsessive","lustful"], nouns: ["slave","pet"], verbs: ["fuck","punish"] }
   };
 
-  private pick(stage: string): string {
-    const arr = this.stageWords[stage] || [];
+  // Pick random element helper
+  private pick<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  private getTotalMessages(): number {
-    return this.myInternalState.counters.white + this.myInternalState.counters.green +
-           this.myInternalState.counters.purple + this.myInternalState.counters.golden +
-           this.myInternalState.counters.red;
-  }
-
   async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
-    const { content } = userMessage;
+    const content = userMessage.content;
 
-    // --- Update stage counters ---
-    const stageThresholds = { white: 10, green: 25, purple: 45, golden: 65, red: Infinity };
-    const currentStage = this.myInternalState.stage;
-    this.myInternalState.counters[currentStage] += 1;
+    // --- Stage progression counters ---
+    const stageThresholds = { white: 10, green: 25, purple: 45, golden: 65, red: 1000 };
+    const stage = this.myInternalState.stage;
+    this.myInternalState.counters[stage] += 1;
 
-    // --- Update stage based on total messages ---
-    const totalMessages = this.getTotalMessages();
+    // --- Calculate total messages for progression ---
+    const totalMessages =
+      this.myInternalState.counters.white +
+      this.myInternalState.counters.green +
+      this.myInternalState.counters.purple +
+      this.myInternalState.counters.golden +
+      this.myInternalState.counters.red;
+
     if (totalMessages >= stageThresholds.red) this.myInternalState.stage = 'red';
     else if (totalMessages >= stageThresholds.golden) this.myInternalState.stage = 'golden';
     else if (totalMessages >= stageThresholds.purple) this.myInternalState.stage = 'purple';
     else if (totalMessages >= stageThresholds.green) this.myInternalState.stage = 'green';
     else this.myInternalState.stage = 'white';
 
-    // --- Secret unlock at purple ---
-    if (!this.myInternalState.secretUnlocked && this.myInternalState.stage === 'purple') {
-      this.myInternalState.secretUnlocked = true;
-    }
-
-    // --- Block secrets before purple ---
-    let modifiedMessage = content;
-    if (!this.myInternalState.secretUnlocked && content.toLowerCase().includes('secret')) {
-      modifiedMessage = "I can't tell you that yet.";
-    }
-
-    // --- Inject stage-specific line ---
-    const injectText = this.pick(this.myInternalState.stage);
-    modifiedMessage += "\n" + injectText;
-
-    return {
-      stageDirections: null,
-      messageState: this.myInternalState,
-      modifiedMessage,
-      systemMessage: null,
-      error: null,
-      chatState: null,
+    // --- Affection keywords detection ---
+    const keywords: { [key: string]: string[] } = {
+      compliment: ["beautiful","handsome","cute","pretty","lovely","adorable"],
+      romantic: ["i love you","i adore you","marry me","kiss","hug"],
+      rude: ["fuck you","shut up","i hate you","idiot","stupid"],
+      flirt: ["sexy","hot","tease","wink","tempting"]
     };
+
+    Object.values(keywords).forEach(list => {
+      if (list.some(word => content.toLowerCase().includes(word))) {
+        this.myInternalState.affection += 2;
+      }
+    });
+
+    // --- Secret logic: cannot reveal until purple ---
+    if (this.myInternalState.stage !== 'purple' && content.toLowerCase().includes('secret')) {
+      userMessage.content = "I can't tell you that yet.";
+    }
+
+    return { messageState: this.myInternalState };
   }
 
   async afterResponse(botMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
-    return {
-      stageDirections: null,
-      messageState: this.myInternalState,
-      modifiedMessage: null,
-      systemMessage: null,
-      error: null,
-      chatState: null
-    };
+    return { messageState: this.myInternalState };
   }
 
   render(): ReactElement {
-    const s = this.myInternalState.stage;
-    return (
-      <div style={{ width: '100vw', height: '100vh', display: 'grid', alignItems: 'stretch', background: '#000', color: '#ff33aa', fontFamily: 'monospace' }}>
-        <div style={{ fontSize: '22px', fontWeight: 'bold', color: s === 'red' ? '#ff0066' : '#ff99ff' }}>
-          STAGE: {s.toUpperCase()}
-        </div>
-        <div>Messages: {this.getTotalMessages()}</div>
-        <div>Secret Unlocked: {this.myInternalState.secretUnlocked ? "YES" : "NO"}</div>
-      </div>
-    );
+    return <div></div>; // Minimal render to satisfy .tsx requirement
   }
 }

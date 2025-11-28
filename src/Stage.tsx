@@ -1,65 +1,48 @@
-// stages/stage.tsx
 import { ReactElement } from "react";
-import { StageBase, StageResponse, Message, InitialData } from "@chub-ai/stages-ts";
+import { StageBase, StageResponse, InitialData, Message } from "@chub-ai/stages-ts";
+import { LoadResponse } from "@chub-ai/stages-ts/dist/types/load";
 
-type StageName = "white" | "green" | "purple" | "golden" | "red";
+// --- Types for state ---
+type MessageStateType = any;
+type ConfigType = any;
+type InitStateType = any;
+type ChatStateType = any;
 
-interface MessageState {
-  msgCount: number;
-  stage: StageName;
-}
+// --- New Stage Skeleton ---
+export class NewStage extends StageBase<InitStateType, ChatStateType, MessageStateType, ConfigType> {
+  myInternalState: { [key: string]: any };
 
-export default class StageImpl extends StageBase<any, any, MessageState, any> {
-  state: MessageState;
-
-  constructor(data: InitialData<any, any, MessageState, any>) {
+  constructor(data: InitialData<InitStateType, ChatStateType, MessageStateType, ConfigType>) {
     super(data);
-    this.state = data.messageState ?? { msgCount: 0, stage: "white" };
+    // Initialize internal state
+    this.myInternalState = data.messageState || {
+      stage: 'newStage',
+      counters: { white: 0, green: 0, purple: 0, golden: 0, red: 0 },
+      affection: 0,
+    };
   }
 
-  private getStage(msgCount: number): StageName {
-    if (msgCount >= 75) return "red";
-    if (msgCount >= 45) return "golden";
-    if (msgCount >= 25) return "purple";
-    if (msgCount >= 10) return "green";
-    return "white";
+  async load(): Promise<Partial<LoadResponse<InitStateType, ChatStateType, MessageStateType>>> {
+    // Called once when the stage loads
+    return { success: true, error: null, initState: null, chatState: null };
   }
 
-  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<any, MessageState>>> {
-    this.state.msgCount += 1;
-    this.state.stage = this.getStage(this.state.msgCount);
-
-    // Example: prefix stage for AI behavior
-    userMessage.content = `[${this.state.stage.toUpperCase()}] ${userMessage.content}`;
-
-    return { messageState: this.state };
+  async setState(state: MessageStateType): Promise<void> {
+    if (state != null) this.myInternalState = { ...this.myInternalState, ...state };
   }
 
-  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, MessageState>>> {
-    // Optional: append some debug info for testing
-    botMessage.content += `\n(Stage: ${this.state.stage}, MsgCount: ${this.state.msgCount})`;
-    return { messageState: this.state };
+  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
+    // Called before sending user message to AI
+    return { messageState: this.myInternalState };
+  }
+
+  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
+    // Called after receiving AI message
+    return { messageState: this.myInternalState };
   }
 
   render(): ReactElement {
-    return (
-      <div style={{
-        padding: "16px",
-        background: "#000",
-        color: "#ff33aa",
-        border: "3px solid #ff0066",
-        borderRadius: "12px",
-        fontFamily: "monospace"
-      }}>
-        <div style={{
-          fontSize: "22px",
-          fontWeight: "bold",
-          color: this.state.stage === "red" ? "#ff0066" : "#ff99ff"
-        }}>
-          STAGE: {this.state.stage.toUpperCase()}
-        </div>
-        <div>Messages: {this.state.msgCount}</div>
-      </div>
-    );
+    // Render minimal empty div (or add scene UI later)
+    return <div></div>;
   }
 }

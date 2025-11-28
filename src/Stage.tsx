@@ -130,6 +130,11 @@ export class Stage extends StageBase<any, any, MessageStateType, any> {
       userMessage.content = "Not yet, my love. Mommy hasn't finished breeding and breaking you~";
     }
 
+    // Futa character secret - only reveal when red stage reached
+    if (this.myInternalState.stage !== "red" && msg.includes("futa")) {
+      userMessage.content = "That's mommy's secret, sweetie. You'll understand when you're ready~";
+    }
+
     // Original sweet/corrupt injection
     const words = this.stageWords[this.myInternalState.stage];
     if (words && Math.random() < 0.5) {

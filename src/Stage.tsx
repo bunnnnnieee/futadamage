@@ -1,5 +1,5 @@
 // stages/stage.tsx
-// Cumulative futa corruption — GitHub-deploy ready (Chub.ai v1 stage)
+// Cumulative futa corruption — GitHub-ready (Chub.ai v1 stage)
 
 import { ReactElement } from "react";
 import {
@@ -66,27 +66,21 @@ export class StageImpl extends StageBase<any, any, MessageState, any> {
         "Tell me everything about your day, baby, I wanna know every detail.",
       ];
       if (Math.random() < 0.45) inject = "\n" + this.pick(lines);
-    }
-
-    else if (s === "green") {
+    } else if (s === "green") {
       const lines = [
         "Aww my sweet angel, let big sis hold you tight forever okay?",
         "You did so good today, I’m seriously proud of my perfect boy.",
         "Come rest on my chest, let me stroke your hair until you relax.",
       ];
       if (Math.random() < 0.55) inject = "\n" + this.pick(lines);
-    }
-
-    else if (s === "purple") {
+    } else if (s === "purple") {
       const lines = [
         "You’d look so fucking pretty in a tiny skirt and thigh-highs, princess.",
         "Keep acting shy, it just makes me wanna bend you over and ruin you.",
         "Call me big sis again, my cock twitches every time you do.",
       ];
       if (Math.random() < 0.75) inject = "\n" + this.pick(lines);
-    }
-
-    else if (s === "golden") {
+    } else if (s === "golden") {
       const lines = [
         "Open wide, princess — time for your daily estrogen pill like a good girl.",
         "Click. Cage locked forever. That clitty belongs to Mommy now.",
@@ -94,9 +88,7 @@ export class StageImpl extends StageBase<any, any, MessageState, any> {
         "After I breed you I’ll cuddle you and kiss every tear away, baby.",
       ];
       if (Math.random() < 0.85) inject = "\n" + this.pick(lines);
-    }
-
-    else if (s === "red") {
+    } else if (s === "red") {
       const lines = [
         "On your knees, worthless sissy cum-rag — open that painted mouth for my cock.",
         "Your locked dicklet drips while my fat balls slap your chin again and again.",
@@ -122,13 +114,14 @@ export class StageImpl extends StageBase<any, any, MessageState, any> {
 
   async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, MessageState>>> {
     if (this.state.msgCount % 4 === 0) {
-      const names = this.state.stage === "red" ? "cum-dump · sissy bitch · cocksleeve · fuckpet" :
-                    this.state.stage === "golden" ? "good girl · fuckdoll · Mommy’s slut" :
-                    this.state.stage === "purple" ? "princess · sissy · brat" :
-                    this.state.stage === "green" ? "good boy · angel · precious" :
-                                                    "baby · cutie · sweetie";
+      const names =
+        this.state.stage === "red" ? "cum-dump · sissy bitch · cocksleeve · fuckpet" :
+        this.state.stage === "golden" ? "good girl · fuckdoll · Mommy’s slut" :
+        this.state.stage === "purple" ? "princess · sissy · brat" :
+        this.state.stage === "green" ? "good boy · angel · precious" :
+                                       "baby · cutie · sweetie";
 
-      botMessage.content += `\n\n───\nMessages: \( {this.state.msgCount} │ Stage: ** \){this.state.stage.toUpperCase()}**\nCalls you: ${names}`;
+      botMessage.content += `\n\n───\nMessages: ${this.state.msgCount} │ Stage: **${this.state.stage.toUpperCase()}**\nCalls you: ${names}`;
     }
     return { messageState: this.state };
   }
@@ -136,8 +129,15 @@ export class StageImpl extends StageBase<any, any, MessageState, any> {
   render(): ReactElement {
     const s = this.state.stage;
     return (
-      <div style={{padding:"16px",background:"#000",color:"#ff33aa",border:"3px solid #ff0066",borderRadius:"12px",fontFamily:"monospace"}}>
-        <div style={{fontSize:"22px",fontWeight:"bold",color:s==="red"?"#ff0066":"#ff99ff"}}>
+      <div style={{
+        padding: "16px",
+        background: "#000",
+        color: "#ff33aa",
+        border: "3px solid #ff0066",
+        borderRadius: "12px",
+        fontFamily: "monospace"
+      }}>
+        <div style={{ fontSize: "22px", fontWeight: "bold", color: s === "red" ? "#ff0066" : "#ff99ff" }}>
           STAGE: {s.toUpperCase()}
         </div>
         <div>Messages: {this.state.msgCount} / 75+</div>

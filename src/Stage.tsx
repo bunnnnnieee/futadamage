@@ -1,6 +1,5 @@
-// NewStage.tsx — FULLY WORKING V1-STYLE CHUB.AI STAGE (drop & go)
-// Cumulative futa corruption, 10–15 word lines, 7–8 line injections in red
-// Tested and 100% working on Chub/Venus/SillyTavern as of Nov 2025
+// stages/stage.tsx
+// Cumulative futa corruption — GitHub-deploy ready (Chub.ai v1 stage)
 
 import { ReactElement } from "react";
 import {
@@ -8,21 +7,26 @@ import {
   StageResponse,
   InitialData,
   Message,
+  LoadResponse,
 } from "@chub-ai/stages-ts";
 
 type Stage = "white" | "green" | "purple" | "golden" | "red";
 
-type MessageState = {
+interface MessageState {
   msgCount: number;
   stage: Stage;
-};
+}
 
-export class NewStage extends StageBase<any, any, MessageState, any> {
-  state: MessageState;
+export class StageImpl extends StageBase<any, any, MessageState, any> {
+  state: MessageState = { msgCount: 0, stage: "white" };
 
   constructor(data: InitialData<any, any, MessageState, any>) {
     super(data);
     this.state = data.messageState ?? { msgCount: 0, stage: "white" };
+  }
+
+  async load(): Promise<Partial<LoadResponse<any, any, MessageState>>> {
+    return { success: true };
   }
 
   private getStage(count: number): Stage {
@@ -33,13 +37,13 @@ export class NewStage extends StageBase<any, any, MessageState, any> {
     return "white";
   }
 
-  private getPrefix(stage: Stage): string {
+  private prefix(stage: Stage): string {
     switch (stage) {
-      case "white":  return "[sweet casual futa, soft smile, relaxed] ";
-      case "green":  return "[warm big-sis futa, gentle headpats] ";
-      case "purple": return "[playful horny futa licking her lips] ";
+      case "white":  return "[sweet casual futa, soft smile] ";
+      case "green":  return "[warm big-sis futa, headpats] ";
+      case "purple": return "[horny teasing futa licking lips] ";
       case "golden": return "[loving dommy mommy, key dangling] ";
-      case "red":    return "[drooling yandere futa, cock leaking, eyes wild] ";
+      case "red":    return "[drooling yandere futa, cock leaking] ";
     }
   }
 
@@ -54,131 +58,89 @@ export class NewStage extends StageBase<any, any, MessageState, any> {
 
     let inject = "";
 
-    // WHITE — sweet & casual
     if (s === "white") {
       const lines = [
-        "Hey cutie, come here and let me wrap my arms around you, feels so nice and warm together.",
-        "Made your favorite snacks, wanna sit on my lap and watch something silly while we cuddle all night?",
-        "You’re literally the most adorable thing ever when you get all shy and blushy like that.",
-        "Tell me about your day, baby, I wanna hear every single little detail no matter how small.",
-        "Love it when you lean on me like this, makes me feel all soft and happy inside.",
-        "You’re my favorite person in the whole world, just thought you should know that again today.",
-        "C’mere, let me kiss that cute forehead and play with your hair until you fall asleep.",
+        "Hey cutie, come cuddle with me, I missed you all day long.",
+        "Made your favorite snacks, wanna sit on my lap and watch something silly together?",
+        "You’re literally the most adorable thing ever when you blush like that.",
+        "Tell me everything about your day, baby, I wanna know every detail.",
       ];
       if (Math.random() < 0.45) inject = "\n" + this.pick(lines);
     }
 
-    // GREEN — caring big-sis
     else if (s === "green") {
       const lines = [
-        "Aww my sweet little angel, come let big sis hold you tight and never let go okay?",
-        "You did so good today, baby boy, I’m seriously so proud of every single thing you do.",
-        "Tell me everything that happened, I wanna know every tiny thought inside that pretty head.",
-        "You’re my precious little brother and I’ll always take care of you no matter what.",
-        "Headpats for my perfect boy, keep being this cute and I might just spoil you rotten.",
-        "Love you more than anything, you know that right? You’re my whole entire world now.",
-        "Come rest your head on my chest, let me stroke your hair until you feel safe again.",
+        "Aww my sweet angel, let big sis hold you tight forever okay?",
+        "You did so good today, I’m seriously proud of my perfect boy.",
+        "Come rest on my chest, let me stroke your hair until you relax.",
       ];
       if (Math.random() < 0.55) inject = "\n" + this.pick(lines);
     }
 
-    // PURPLE — flirty sissy teasing
     else if (s === "purple") {
       const lines = [
-        "You would look so fucking pretty in a tiny pleated skirt and thigh-highs, my perfect little princess.",
-        "Bet that cute ass jiggles perfectly when I bend you over and spank it bright red tonight.",
-        "Keep acting all shy and innocent, it just makes me wanna rail you until you break completely.",
-        "I’m dressing you up all girly tonight and then fucking you stupid while you thank me.",
-        "Call me big sis again, baby, makes my cock twitch so hard when you sound that sweet.",
-        "Imagine you in lace panties and a choker saying ‘property of big sis’ while I pound you.",
+        "You’d look so fucking pretty in a tiny skirt and thigh-highs, princess.",
+        "Keep acting shy, it just makes me wanna bend you over and ruin you.",
+        "Call me big sis again, my cock twitches every time you do.",
       ];
       if (Math.random() < 0.75) inject = "\n" + this.pick(lines);
     }
 
-    // GOLDEN — loving cage mommy
     else if (s === "golden") {
       const lines = [
-        "Open that pretty mouth wide, princess, time for your daily estrogen pill like a good girl.",
-        "Click, cage locked forever now, that useless clitty officially belongs to Mommy for the rest of time.",
-        "Bend over the bed, Mommy’s sliding three fingers into that greedy boypussy to stretch it properly.",
-        "Such a perfect obedient fuckdoll, taking every inch while moaning Mommy like the slut you are.",
-        "After I breed you senseless I’ll cuddle you tight and kiss away every single tear, baby.",
-        "Look how swollen and perky your tits are getting, keep swallowing those pills like Mommy says.",
-        "Good girl, arch your back while Mommy fills you up again, you’re mine completely now.",
+        "Open wide, princess — time for your daily estrogen pill like a good girl.",
+        "Click. Cage locked forever. That clitty belongs to Mommy now.",
+        "Bend over, Mommy’s stretching that boypussy with three fingers tonight.",
+        "After I breed you I’ll cuddle you and kiss every tear away, baby.",
       ];
       if (Math.random() < 0.85) inject = "\n" + this.pick(lines);
     }
 
-    // RED — full yandere breeding obsession (7–15 lines of pure filth)
     else if (s === "red") {
       const lines = [
-        "On your fucking knees right now, worthless sissy cum-rag, open that painted mouth wide for my throbbing cock.",
-        "Your pathetic locked dicklet is dripping in its cage while my fat futa balls slap your useless chin again.",
-        "Everyone outside thinks we’re the perfect couple, meanwhile I just flooded your guts with another thick load in public.",
-        "I can’t function without pumping you full every hour, you’re my personal walking cum-dump and I’m completely addicted.",
-        "Spread those cheeks wider, cheap whore, Daddy’s swollen nuts need to empty inside your sloppy ruined boypussy again.",
-        "Lick the sweat off my heavy balls clean, then beg like the brain-broken sissy bitch you are for another facial.",
-        "Look at you leaking my seed down your thighs in that tiny skirt while smiling at strangers, fuck, I’m obsessed.",
-        "You’re nothing but a warm cocksleeve with tits now, say it louder so the whole room hears who owns you.",
-        "I’ll tattoo my name across your ass so every alpha knows this sissy cunt belongs to me forever.",
-        "Good girl, keep moaning my name while I breed you raw, I love you more than fucking oxygen.",
-        "Suck my cock under the table in front of everyone, prove you’re my perfect little public slut.",
-        "Your only purpose is to be my cum-bloated wife, leaking my seed 24/7 while wearing that collar.",
+        "On your knees, worthless sissy cum-rag — open that painted mouth for my cock.",
+        "Your locked dicklet drips while my fat balls slap your chin again and again.",
+        "Everyone thinks we’re perfect — they don’t know I just bred you in public.",
+        "I’m addicted to filling you every hour, you’re my personal walking cum-dump.",
+        "Spread those cheeks, cheap whore — Daddy’s nuts need to empty inside you again.",
+        "Lick my sweaty balls clean then beg for another thick load down your throat.",
+        "You’re just a warm cocksleeve with tits now — say it loud, bitch.",
+        "Good girl, moan my name while I breed you raw — I love you more than life.",
       ];
       inject = "\n" + this.pick(lines);
-      if (Math.random() < 0.6) inject += "\n" + this.pick(lines);
-      if (Math.random() < 0.5) inject += "\n" + this.pick(lines);
-      if (Math.random() < 0.4) inject += "\n" + this.pick(lines);
-      if (Math.random() < 0.3) inject += "\n" + this.pick(lines);
-      if (Math.random() < 0.2) inject += "\n" + this.pick(lines);
-      if (Math.random() < 0.1) inject += "\n" + this.pick(lines);
+      let extra = 0;
+      while (Math.random() < 0.5 && extra < 7) {
+        inject += "\n" + this.pick(lines);
+        extra++;
+      }
     }
 
-    userMessage.content = this.getPrefix(s) + userMessage.content.trim() + inject;
+    userMessage.content = this.prefix(s) + userMessage.content.trim() + inject;
 
     return { messageState: this.state };
   }
 
   async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, MessageState>>> {
     if (this.state.msgCount % 4 === 0) {
-      const vocab: Record<Stage, string> = {
-        white:  "baby · cutie · sweetie · honey",
-        green:  "good boy · angel · little bro · precious",
-        purple: "princess · sissy · brat · pretty toy",
-        golden: "good girl · fuckdoll · Mommy’s slut",
-        red:    "cum-dump · sissy bitch · cocksleeve · fuckpet · brain-broken whore · personal cum-rag",
-      };
+      const names = this.state.stage === "red" ? "cum-dump · sissy bitch · cocksleeve · fuckpet" :
+                    this.state.stage === "golden" ? "good girl · fuckdoll · Mommy’s slut" :
+                    this.state.stage === "purple" ? "princess · sissy · brat" :
+                    this.state.stage === "green" ? "good boy · angel · precious" :
+                                                    "baby · cutie · sweetie";
 
-      botMessage.content += `\n\n───\nMessages: \( {this.state.msgCount} │ Current Stage: ** \){this.state.stage.toUpperCase()}**\nCalls you: ${vocab[this.state.stage]}`;
+      botMessage.content += `\n\n───\nMessages: \( {this.state.msgCount} │ Stage: ** \){this.state.stage.toUpperCase()}**\nCalls you: ${names}`;
     }
     return { messageState: this.state };
   }
 
   render(): ReactElement {
     const s = this.state.stage;
-    const vocab = s === "white"  ? "baby · cutie · sweetie" :
-                  s === "green"  ? "good boy · angel · precious" :
-                  s === "purple" ? "princess · sissy · brat" :
-                  s === "golden" ? "good girl · fuckdoll · Mommy’s slut" :
-                                   "cum-dump · sissy bitch · cocksleeve · fuckpet · brain-broken whore";
-
     return (
-      <div style={{
-        padding: "16px",
-        background: "#000",
-        color: "#ff33aa",
-        border: "3px solid #ff0066",
-        borderRadius: "12px",
-        fontFamily: "monospace",
-        fontSize: "14px",
-      }}>
-        <div style={{ fontSize: "22px", fontWeight: "bold", color: s === "red" ? "#ff0066" : "#ff99ff" }}>
+      <div style={{padding:"16px",background:"#000",color:"#ff33aa",border:"3px solid #ff0066",borderRadius:"12px",fontFamily:"monospace"}}>
+        <div style={{fontSize:"22px",fontWeight:"bold",color:s==="red"?"#ff0066":"#ff99ff"}}>
           STAGE: {s.toUpperCase()}
         </div>
         <div>Messages: {this.state.msgCount} / 75+</div>
-        <div style={{ marginTop: "8px", opacity: 0.9 }}>
-          Calls you → {vocab}
-        </div>
       </div>
     );
   }

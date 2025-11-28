@@ -1,83 +1,71 @@
-// stages/stage.tsx — SAFE V1 CHUB.AI STAGE WITH FULL DETAILS
-
+// stages/stage.tsx
 import { ReactElement } from "react";
 import { StageBase, StageResponse, InitialData, Message } from "@chub-ai/stages-ts";
 import { LoadResponse } from "@chub-ai/stages-ts/dist/types/load";
 
 type Rarity = "white" | "green" | "purple" | "golden" | "red";
 
-interface MessageStateType {
+interface StageState {
   stage: Rarity;
   counters: Record<Rarity, number>;
   affection: number;
-  loadsReceived?: number;       // Safe placeholder for "load" counters
-  daysInChastity?: number;      // Safe placeholder
-  wombFullness?: number;        // Safe placeholder
-  publicCreampieCount?: number; // Safe placeholder
-  photosTaken?: number;         // Safe placeholder
-  weddingRingDate?: number | null; // Safe placeholder
-  cumAddiction?: number;        // Safe placeholder
-  hoursSinceLastBreeding?: number; // Safe placeholder
+  numUsers?: number;
+  numChars?: number;
 }
 
-export class Stage extends StageBase<any, any, MessageStateType, any> {
-  private myInternalState: MessageStateType;
+export class Stage extends StageBase<any, any, StageState, any> {
+  private myInternalState: StageState;
 
-  // ────────────────────── WORD POOLS ──────────────────────
-  private stageWords = {
+  // ─────────────── STAGE WORDS ───────────────
+  private stageWords: Record<Rarity, { adjectives: string[]; nouns: string[]; verbs: string[] }> = {
     white: {
-      adj: ["cute", "soft", "adorable", "precious", "sweet", "tiny", "innocent", "shy", "blushing", "lovable", "huggable", "warm", "cozy", "gentle", "pure"],
-      noun: ["baby", "cutie", "little one", "bunny", "kitten", "angel", "darling", "sweetie", "princess", "pumpkin", "bean", "cupcake", "marshmallow", "snugglebug", "lovebug"],
-      verb: ["cuddle", "hug", "kiss", "pet", "hold", "snuggle", "nuzzle", "boop", "squish", "protect", "spoil", "carry", "rock", "tuck in", "praise"]
+      adjectives: ["cute","soft","adorable","precious","sweet","tiny","innocent","shy","blushing","lovable","huggable","warm","cozy","gentle","pure"],
+      nouns: ["baby","cutie","little one","bunny","kitten","angel","darling","sweetie","princess","pumpkin","bean","cupcake","marshmallow","snugglebug","lovebug"],
+      verbs: ["cuddle","hug","kiss","pet","hold","snuggle","nuzzle","boop","squish","protect","spoil","carry","rock","tuck in","praise"]
     },
     green: {
-      adj: ["good", "perfect", "precious", "amazing", "brave", "smart", "talented", "handsome", "strong", "lovely", "obedient", "polite", "gentle", "caring", "thoughtful", "mature", "responsible"],
-      noun: ["good boy", "little bro", "prince", "treasure", "angel", "hero", "champ", "sunshine", "star", "king", "my love", "sweetheart", "baby boy", "puppy", "knight", "protector", "big boy", "honey"],
-      verb: ["praise", "reward", "protect", "guide", "teach", "spoil", "comfort", "heal", "carry", "shield", "cherish", "worship", "support", "encourage", "love", "hug tightly", "kiss forehead", "headpat"]
+      adjectives: ["good","perfect","precious","amazing","brave","smart","talented","handsome","strong","lovely","obedient","polite","gentle","caring","thoughtful","mature","responsible"],
+      nouns: ["good boy","little bro","prince","treasure","angel","hero","champ","sunshine","star","king","my love","sweetheart","baby boy","puppy","knight","protector","big boy","honey"],
+      verbs: ["praise","reward","protect","guide","teach","spoil","comfort","heal","carry","shield","cherish","worship","support","encourage","love","hug tightly","kiss forehead","headpat"]
     },
     purple: {
-      adj: ["naughty", "slutty", "bratty", "teasing", "horny", "lewd", "needy", "greedy", "perverted", "flirty", "seductive", "playful", "mischievous", "cock-hungry", "thirsty", "desperate", "frisky", "touchy", "grabby", "spoiled", "cocky", "bold"],
-      noun: ["princess", "sissy", "brat", "toy", "pet", "bitch", "slut", "minx", "tease", "troublemaker", "cockslut", "cumdump", "fucktoy", "doll", "kitten", "bunny", "vixen", "whore", "good girl", "bad girl", "prey", "prettypet"],
-      verb: ["tease", "bully", "spank", "grope", "grind on", "edge", "deny", "dress up", "humiliate", "mock", "torture", "rail", "ruin", "break", "corrupt", "train", "stretch", "breed", "mark", "own", "claim", "use"]
+      adjectives: ["naughty","slutty","bratty","teasing","horny","lewd","needy","greedy","perverted","flirty","seductive","playful","mischievous","cock-hungry","thirsty","desperate","frisky","touchy","grabby","spoiled","cocky","bold"],
+      nouns: ["princess","sissy","brat","toy","pet","bitch","slut","minx","tease","troublemaker","cockslut","cumdump","fucktoy","doll","kitten","bunny","vixen","whore","good girl","bad girl","prey","prettypet"],
+      verbs: ["tease","bully","spank","grope","grind on","edge","deny","dress up","humiliate","mock","torture","rail","ruin","break","corrupt","train","stretch","breed","mark","own","claim","use"]
     },
     golden: {
-      adj: ["obedient", "perfect", "broken", "addicted", "owned", "trained", "brainless", "caged", "feminized", "ruined", "docile", "submissive", "devoted", "loyal", "worshipping", "desperate", "needy", "pathetic", "helpless", "dependent", "adoring", "grateful", "thankful", "blissful", "empty-headed"],
-      noun: ["good girl", "fuckdoll", "slave", "property", "wife", "pet", "bimbo", "sissy", "cocksleeve", "breeding toy", "Mommy’s girl", "cumdump", "whore", "princess", "doll", "toy", "angel", "babygirl", "kitten", "puppy", "cow", "milked pet", "locked slut", "chastity pet", "Mommy’s favorite"],
-      verb: ["cage", "lock", "breed", "milk", "train", "break", "brainwash", "feminize", "impregnate", "pump full", "feed pills", "stretch", "ruin", "own", "collar", "leash", "worship", "serve", "obey", "beg", "thank", "leak", "drip", "moan", "scream"]
+      adjectives: ["obedient","perfect","broken","addicted","owned","trained","brainless","caged","feminized","ruined","docile","submissive","devoted","loyal","worshipping","desperate","needy","pathetic","helpless","dependent","adoring","grateful","thankful","blissful","empty-headed"],
+      nouns: ["good girl","fuckdoll","slave","property","wife","pet","bimbo","sissy","cocksleeve","breeding toy","Mommy’s girl","cumdump","whore","princess","doll","toy","angel","babygirl","kitten","puppy","cow","milked pet","locked slut","chastity pet","Mommy’s favorite"],
+      verbs: ["cage","lock","breed","milk","train","break","brainwash","feminize","impregnate","pump full","feed pills","stretch","ruin","own","collar","leash","worship","serve","obey","beg","thank","leak","drip","moan","scream"]
     },
     red: {
-      adj: ["worthless", "pathetic", "drooling", "cum-drunk", "brain-broken", "ruined", "destroyed", "mindless", "leaking", "bloated", "swollen", "feral", "obsessed", "addicted", "desperate", "filthy", "disgusting", "depraved", "perverted", "twisted", "insane", "unhinged", "rabid", "possessed", "cum-addicted", "breeding-obsessed", "cock-worshipping", "sissy-broken", "feminized forever", "irredeemable"],
-      noun: ["cum-dump", "cocksleeve", "breeding sow", "sissy bitch", "fuckpet", "cum-toilet", "meat hole", "rape toy", "public whore", "walking womb", "cum balloon", "brainless slut", "drooling mess", "cum-rag", "semen tank", "breeding stock", "futa’s wife", "personal onahole", "cum-bucket", "sissy livestock", "broken doll", "cum-zombie", "futa’s property", "eternal cum-slut", "leaking wife", "public cum-rag", "cock-worshipper", "breeding slave", "futa’s cum-vessel", "ruined sissy"],
-      verb: ["destroy", "impregnate", "pump full", "flood", "break forever", "brain-melt", "rape", "breed raw", "fill to bursting", "mark permanently", "tattoo", "collar", "chain", "degrade", "humiliate", "expose", "parade", "leak in public", "force-feed cum", "mind-break", "shatter", "own eternally", "corrupt completely", "turn into cum-zombie", "keep forever", "never release", "mate-press", "belly-bulge", "womb-tattoo", "ruin completely"]
+      adjectives: ["worthless","pathetic","drooling","cum-drunk","brain-broken","ruined","destroyed","mindless","leaking","bloated","swollen","feral","obsessed","addicted","desperate","filthy","disgusting","depraved","perverted","twisted","insane","unhinged","rabid","possessed","cum-addicted","breeding-obsessed","cock-worshipping","sissy-broken","feminized forever","irredeemable"],
+      nouns: ["cum-dump","cocksleeve","breeding sow","sissy bitch","fuckpet","cum-toilet","meat hole","rape toy","public whore","walking womb","cum balloon","brainless slut","drooling mess","cum-rag","semen tank","breeding stock","futa’s wife","personal onahole","cum-bucket","sissy livestock","broken doll","cum-zombie","futa’s property","eternal cum-slut","leaking wife","public cum-rag","cock-worshipper","breeding slave","futa’s cum-vessel","ruined sissy"],
+      verbs: ["destroy","impregnate","pump full","flood","break forever","brain-melt","rape","breed raw","fill to bursting","mark permanently","tattoo","collar","chain","degrade","humiliate","expose","parade","leak in public","force-feed cum","mind-break","shatter","own eternally","corrupt completely","turn into cum-zombie","keep forever","never release","mate-press","belly-bulge","womb-tattoo","ruin completely"]
     }
   };
+
+  constructor(data: InitialData<any, any, StageState, any>) {
+    super(data);
+    const { users, characters, messageState } = data;
+    this.myInternalState = messageState ?? {
+      stage: "white",
+      counters: { white: 0, green: 0, purple: 0, golden: 0, red: 0 },
+      affection: 50,
+      numUsers: Object.keys(users).length,
+      numChars: Object.keys(characters).length
+    };
+  }
+
+  async load(): Promise<Partial<LoadResponse<any, any, StageState>>> {
+    return { success: true };
+  }
 
   private pick<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  constructor(data: InitialData<any, any, MessageStateType, any>) {
-    super(data);
-    this.myInternalState = data.messageState ?? {
-      stage: "white",
-      counters: { white:0, green:0, purple:0, golden:0, red:0 },
-      affection: 50,
-      loadsReceived: 0,
-      daysInChastity: 0,
-      wombFullness: 0,
-      publicCreampieCount: 0,
-      photosTaken: 0,
-      weddingRingDate: null,
-      cumAddiction: 0,
-      hoursSinceLastBreeding: 0
-    };
-  }
-
-  async load(): Promise<Partial<LoadResponse<any, any, MessageStateType>>> {
-    return { success: true };
-  }
-
-  private updateStage(): void {
+  private updateStageFromCounters() {
     const total =
       this.myInternalState.counters.white +
       this.myInternalState.counters.green +
@@ -92,58 +80,49 @@ export class Stage extends StageBase<any, any, MessageStateType, any> {
     else this.myInternalState.stage = "white";
   }
 
-  private updateAffection(msg: string) {
-    const lower = msg.toLowerCase();
-    const compliments = ["cute","beautiful","sweet"];
-    const flirts = ["hot","sexy","tease"];
-    const rude = ["stupid","idiot"];
+  private updateAffection(content: string) {
+    const lower = content.toLowerCase();
+    const compliments = ["cute","pretty","beautiful"];
+    const flirts = ["sexy","hot"];
+    const rude = ["stupid","bitch"];
+
     let points = 0;
-    compliments.some(w=>lower.includes(w))&&(points+=3);
-    flirts.some(w=>lower.includes(w))&&(points+=5);
-    rude.some(w=>lower.includes(w))&&(points-=4);
+    compliments.some(w => lower.includes(w)) && (points += 3);
+    flirts.some(w => lower.includes(w)) && (points += 5);
+    rude.some(w => lower.includes(w)) && (points -= 4);
+
     this.myInternalState.affection = Math.max(0, Math.min(100, this.myInternalState.affection + points));
   }
 
-  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<any, MessageStateType>>> {
-    const msg = userMessage.content.toLowerCase();
+  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<any, StageState>>> {
+    const msg = userMessage.content;
 
-    // Stage counter increment
-    const curStage = this.myInternalState.stage;
-    this.myInternalState.counters[curStage]++;
-    this.updateStage();
+    // Increment current stage counter
+    const currentStage = this.myInternalState.stage;
+    this.myInternalState.counters[currentStage] += 1;
 
-    this.updateAffection(userMessage.content);
+    // Update stage
+    this.updateStageFromCounters();
+
+    // Update affection
+    this.updateAffection(msg);
 
     // Secret lock until purple
-    if(!["purple","golden","red"].includes(this.myInternalState.stage) && msg.includes("secret")) {
+    if (!["purple","golden","red"].includes(this.myInternalState.stage) && msg.toLowerCase().includes("secret")) {
       userMessage.content = "I can't tell you that yet.";
     }
 
-    // Random stage-flavored line
+    // Inject random stage-flavored line
     const words = this.stageWords[this.myInternalState.stage];
-    const line = `(${this.pick(words.adj)}) ${this.pick(words.noun)}, let's ${this.pick(words.verb)}!`;
-    if(Math.random()<0.5) userMessage.content += `\n${line}`;
-
-    // ── Safe placeholder injections for counters ──
-    if(this.myInternalState.loadsReceived!>4)
-      userMessage.content += "\nYour belly feels full from the latest activity.";
-
-    if(this.myInternalState.daysInChastity!>60)
-      userMessage.content += "\nYour personal restraint has been in place for a long time.";
-
-    if(this.myInternalState.wombFullness!>=20)
-      userMessage.content += "\nYou feel a notable fullness when you move.";
-
-    if(this.myInternalState.publicCreampieCount!>=10)
-      userMessage.content += `\nPublic activity has increased; total events: ${this.myInternalState.photosTaken}.`;
-
-    if(this.myInternalState.weddingRingDate!==null)
-      userMessage.content += `\nBeen in your current commitment for ${curStage} stage messages.`;
+    if (Math.random() < 0.6) {
+      const line = `${this.pick(words.adjectives)} ${this.pick(words.nouns)}, I just want to ${this.pick(words.verbs)} you right now~`;
+      userMessage.content += `\n${line}`;
+    }
 
     return { messageState: this.myInternalState };
   }
 
-  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, MessageStateType>>> {
+  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, StageState>>> {
     return { messageState: this.myInternalState };
   }
 

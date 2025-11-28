@@ -110,7 +110,7 @@ export class Stage extends StageBase<any, any, MessageStateType, any> {
   private updateStage(): void {
     const t = this.myInternalState.counters;
     const total = t.white + t.green + t.purple + t.golden + t.red;
-    if (total >= 1000) this.myInternalState.stage = "red";
+    if (total >= 100) this.myInternalState.stage = "red";
     else if (total >= 65) this.myInternalState.stage = "golden";
     else if (total >= 45) this.myInternalState.stage = "purple";
     else if (total >= 25) this.myInternalState.stage = "green";

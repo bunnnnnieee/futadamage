@@ -18,6 +18,7 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
       stage: 'white',
       counters: { white: 0, green: 0, purple: 0, golden: 0, red: 0 },
       affection: 0,
+      secretUnlocked: false
     };
 
     this.myInternalState.numUsers = Object.keys(users).length;
@@ -32,72 +33,56 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
     if (state != null) this.myInternalState = { ...this.myInternalState, ...state };
   }
 
-  // --- All stage words ---
+  // --- Stage words ---
   stageWords = {
-    white: {
-      adjectives: ["friendly","nice","happy","cool","pleasant","cheerful","bright","fun","relaxed","easygoing","calm","warm","light","bright-eyed","upbeat","joyful","sociable","playful","bubbly","polite","gentle","pleasantly surprised","easygoing","smiling","content","peaceful","approachable","amiable","brightened","grinning","mellow","cordial","brighthearted","pleasant-natured","sunny","optimistic","warm-hearted","soft-spoken","light-hearted","welcoming","agreeable"],
-      nouns: ["day","chat","moment","conversation","time","activity","weather","plan","topic","experience","story","event","greeting","meeting","discussion","interaction","occasion","outing","momentum","activity","project","task","schedule","routine","moment","session","gathering","discussion","connection","interaction","sharing","story","idea","plan","occasion","fun","game","joke","smile","laugh"],
-      verbs: ["talk","share","chat","smile","laugh","relax","hang out","listen","joke","explore","enjoy","discuss","connect","engage","converse","notice","observe","participate","comment","respond","reflect","ponder","wander","ask","answer","greet","check","plan","prepare","celebrate","consider","play","help","offer","exchange","relate","react","consider","mention","ponder"]
-    },
-    green: {
-      adjectives: ["warm","pleasant","cheerful","sweet","fun","bright","friendly","engaging","kind","enjoyable","lovely","pleasantly surprising","considerate","gentle","adorable","delightful","pleasant-minded","gracious","charming","polished","sociable","welcoming","soft","approachable","lighthearted","friendly-natured","smiling","easygoing","sunny","positive","happy","affectionate","adoring","delightful","gentle-hearted","friendly-spirited","pleasant-hearted","caring","pleasantly kind","amiable"],
-      nouns: ["friend","presence","conversation","moment","interaction","topic","story","joke","idea","activity","day","event","meeting","connection","chat","discussion","relationship","experience","greeting","sharing","exchange","bond","talk","session","outing","companionship","interaction","communication","experience","activity","task","plan","occasion","interest","topic","moment","connection","fun","laugh","smile","joy","enjoyment","pleasure"],
-      verbs: ["enjoy","smile","laugh","chat","hang out","listen","share","talk","explore","appreciate","notice","connect","engage","converse","reflect","respond","participate","observe","consider","ponder","comment","ask","answer","relate","help","offer","exchange","mention","greet","prepare","celebrate","discuss","bond","admire","respect","appreciate","value","notice","acknowledge","converse"]
-    },
-    purple: {
-      adjectives: ["naughty","hot-blooded","reckless","flirty","wild","seductive","thirsty","fiery","lustful","playful","tempting","risqué","enticing","brazen","alluring","provocative","teasing","desirable","suggestive","flirtatious","sensual","risque","bold","irresistible","passionate","mischievous","sultry","sizzling","tempting","bold-hearted","provocative-minded","fascinating","intriguing","captivating","coquettish","charming","magnetic","magnetizing","appealing","provocative-smile","appealingly naughty","tempting-glance"],
-      nouns: ["lover","flame","crush","partner","hookup","playmate","companion","tease","darling","heartbreaker","seducer","fling","boo","sweetheart","desire","temptress","charmer","teaser","seductress","crush","romantic-interest","flirt","affair","paramour","temptation","heartthrob","passion","admirer","flame","temptation","mate","bae","attraction","siren","vixen","romancer","infatuation","enchantress","captivation"],
-      verbs: ["tease","caress","seduce","flirt","kiss","touch","tickle","cuddle","stroke","chase","entice","grope","play","embrace","fondle","tempt","allure","captivate","arouse","provocate","tantalize","charm","engage","enthrall","entice","enchant","coax","draw","pull","attract","woo","wooing","pleasure","desire","invite","linger","seduce","woo","delight","captivate"]
-    },
-    golden: {
-      adjectives: ["affectionate","bold","intoxicating","merciless","tender","lustful","protective","horny","adoring","shameless","depraved","obedient-breaking","brazen","fiery","devoted","punishing","corrupt","nurturing","gentle","loving","seductive","filthy","dominant","bold","enamored","obsessive","captivating","fervent","zealous","infatuated","passionate","excessive","fixated","unyielding","all-consuming","intense","worshipful","fanatical","fervid","clingy","obsessive-minded"],
-      nouns: ["Partner","Seducer","Beloved","Dom","Caregiver","Sweetheart","Playmate","Companion","Temptress","Owner","Guardian","Master","Protector","Mother","Lover","Confidant","Mistress","Nurturer","Sir","Lover","Admirer","Obsessed-lover","Fervent-companion","Heartmate","Devoted-one","Intense-lover","Affectionate-mate","Worshipful-companion","Adoring-lover","Possessed-one","Obsession","Heartthrob","Fanatic","Possessed-lover","Beloved-one","Infatuation","Fiery-heart","Worshipper","Fixated-one","All-consuming-one","Zealous-lover"],
-      verbs: ["Kiss","Tease","Grope","Protect","Soothe","Seduce","Cuddle","Dominate","Caress","Command","Flirt","Embrace","Hold","Stroke","Punish","Nuzzle","Fuck","Comfort","Control","Reassure","Adore","Worship","Cling","Obsess","Entice","Devote","Crave","Cherish","Enslave","Overwhelm","Affectionate-touch","Satisfy","Possess","Devour","Obsession-act","Heart-command","Embrace-passion","Infatuate","Fascinate","Captivate"]
-    },
-    red: {
-      adjectives: ["Obsessive","Craving","Warmhearted","Sensual-tormenting","Tender","Lustful","Protective","Horny","Adoring","Shameless","Depraved","Obedient-breaking","Brazen","Fiery","Devoted","Punishing","Corrupt","Nurturing","Gentle","Loving","Seductive","Filthy","Dominant","Bold","Enamored","Possessive","Madly-obsessed","Uncontrollable","Fixated","Fanatical","All-consuming","Clingy","Obsession-driven","Infatuated","Devoted-mad","Crazy-for-you","Overwhelmed","Unhinged","Ravishing","Feverish","Raging","Intoxicated","Enraptured","Frenzied"],
-      nouns: ["Dom","Heartthrob","Slave","Fucker","Darling","Plaything","Pet","Lover","Affectionate-partner","Submissive","Owner","Fling","Toy","Guardian","Hookup","Mistress","Sweetheart","Caregiver","Companion","Desire","Lover-mate","Temptress","Follower","Protector","Master","Beloved","Obsessed-lover","Adoration","Infatuation","Heartmate","Possessed-one","Mad-love","Devoted-heart","Fanatic-lover","Heartthrob","Enslaved-lover","Crazy-for","Passionate-one","Fervent-lover","Devoted-mad","Uncontrollable-lover"],
-      verbs: ["Cuddle","Degrade","Mock","Stroke","Adore","Punish","Nuzzle","Submit","Bind","Tease","Pamper","Force","Dominate","Obey","Grope","Embrace","Cherish","Hold","Comfort","Kiss","Fuck","Train","Flirt","Caress","Command","Cling","Crave","Obsession-act","Devour","Captivate","Overwhelm","Possess","Enslave","Infatuate","Worship","Adore-obsessively","Fanatic-act","Obsessively-love","Ravage","Desire","Devotion","Obsession-driven","Overpower","Frenzy","Obsession-touch"]
-    }
+    white: ["Hey cutie, come cuddle with me.", "Made your favorite snacks, wanna sit on my lap?", "Tell me everything about your day, baby."],
+    green: ["Aww my sweet angel, let big sis hold you tight.", "You did so good today, I’m proud of you.", "Come rest on my chest, let me stroke your hair."],
+    purple: ["You’d look so pretty in a tiny skirt, princess.", "Keep acting shy, it makes me want you.", "Call me big sis again, it drives me wild."],
+    golden: ["Open wide, princess — time for your daily pill.", "Cage locked forever. That clitty belongs to Mommy now.", "Bend over, stretching you tonight."],
+    red: ["On your knees, worthless sissy cum-rag.", "Your locked dicklet drips while I slap your chin.", "I’m addicted to filling you every hour.", "Spread those cheeks, cheap whore."]
   };
+
+  private pick(stage: string): string {
+    const arr = this.stageWords[stage] || [];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  private getTotalMessages(): number {
+    return this.myInternalState.counters.white + this.myInternalState.counters.green +
+           this.myInternalState.counters.purple + this.myInternalState.counters.golden +
+           this.myInternalState.counters.red;
+  }
 
   async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<ChatStateType, MessageStateType>>> {
     const { content } = userMessage;
 
-    // --- Stage progression counters ---
+    // --- Update stage counters ---
     const stageThresholds = { white: 10, green: 25, purple: 45, golden: 65, red: Infinity };
-    const stage = this.myInternalState.stage;
-    this.myInternalState.counters[stage] += 1;
+    const currentStage = this.myInternalState.stage;
+    this.myInternalState.counters[currentStage] += 1;
 
     // --- Update stage based on total messages ---
-    const totalMessages = this.myInternalState.counters.white + this.myInternalState.counters.green +
-                          this.myInternalState.counters.purple + this.myInternalState.counters.golden;
+    const totalMessages = this.getTotalMessages();
     if (totalMessages >= stageThresholds.red) this.myInternalState.stage = 'red';
     else if (totalMessages >= stageThresholds.golden) this.myInternalState.stage = 'golden';
     else if (totalMessages >= stageThresholds.purple) this.myInternalState.stage = 'purple';
     else if (totalMessages >= stageThresholds.green) this.myInternalState.stage = 'green';
     else this.myInternalState.stage = 'white';
 
-    // --- Affection keyword detection ---
-    const keywords: { [key: string]: string[] } = {
-      compliment: ["beautiful","handsome","cute","pretty","amazing","lovely","adorable","charming","gorgeous","stunning","radiant","sweet"],
-      romantic: ["i love you","i adore you","marry me","kiss","hug","crush","infatuated","romantic"],
-      rude: ["fuck you","shut up","i hate you","idiot","stupid","dumb","jerk"],
-      flirt: ["sexy","hot","tease","wink","tempting","seductive","alluring","provocative"],
-    };
+    // --- Secret unlock at purple ---
+    if (!this.myInternalState.secretUnlocked && this.myInternalState.stage === 'purple') {
+      this.myInternalState.secretUnlocked = true;
+    }
 
-    Object.keys(keywords).forEach(category => {
-      const words = keywords[category];
-      if (words.some(w => content.toLowerCase().includes(w))) {
-        this.myInternalState.affection += 2;
-      }
-    });
-
-    // --- Secret logic ---
+    // --- Block secrets before purple ---
     let modifiedMessage = content;
-    if (this.myInternalState.stage !== 'purple' && content.toLowerCase().includes('secret')) {
+    if (!this.myInternalState.secretUnlocked && content.toLowerCase().includes('secret')) {
       modifiedMessage = "I can't tell you that yet.";
     }
+
+    // --- Inject stage-specific line ---
+    const injectText = this.pick(this.myInternalState.stage);
+    modifiedMessage += "\n" + injectText;
 
     return {
       stageDirections: null,
@@ -121,6 +106,15 @@ export class Stage extends StageBase<InitStateType, ChatStateType, MessageStateT
   }
 
   render(): ReactElement {
-    return <div style={{ width: '100vw', height: '100vh', display: 'grid', alignItems: 'stretch' }}></div>;
+    const s = this.myInternalState.stage;
+    return (
+      <div style={{ width: '100vw', height: '100vh', display: 'grid', alignItems: 'stretch', background: '#000', color: '#ff33aa', fontFamily: 'monospace' }}>
+        <div style={{ fontSize: '22px', fontWeight: 'bold', color: s === 'red' ? '#ff0066' : '#ff99ff' }}>
+          STAGE: {s.toUpperCase()}
+        </div>
+        <div>Messages: {this.getTotalMessages()}</div>
+        <div>Secret Unlocked: {this.myInternalState.secretUnlocked ? "YES" : "NO"}</div>
+      </div>
+    );
   }
 }

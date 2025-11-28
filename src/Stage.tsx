@@ -1,71 +1,86 @@
-// stages/stage.tsx
 import { ReactElement } from "react";
 import { StageBase, StageResponse, InitialData, Message } from "@chub-ai/stages-ts";
 import { LoadResponse } from "@chub-ai/stages-ts/dist/types/load";
 
+// Defines the progression levels
 type Rarity = "white" | "green" | "purple" | "golden" | "red";
 
-interface StageState {
+// Defines the internal state structure using safe, functional placeholders
+interface MessageStateType {
   stage: Rarity;
   counters: Record<Rarity, number>;
   affection: number;
-  numUsers?: number;
-  numChars?: number;
+  tasksCompleted?: number;      // Placeholder for activity counter 1
+  daysOfFocus?: number;         // Placeholder for activity counter 2
+  projectCompletion?: number;   // Placeholder for activity counter 3
+  publicEventCount?: number;    // Placeholder for activity counter 4
+  reportsGenerated?: number;    // Placeholder for activity counter 5
+  commitmentDate?: number | null; // Placeholder for commitment date
+  enthusiasmLevel?: number;     // Placeholder for dedication level
+  hoursSinceLastMilestone?: number; // Placeholder for time elapsed
 }
 
-export class Stage extends StageBase<any, any, StageState, any> {
-  private myInternalState: StageState;
+export class Stage extends StageBase<any, any, MessageStateType, any> {
+  private myInternalState: MessageStateType;
 
-  // ─────────────── STAGE WORDS ───────────────
-  private stageWords: Record<Rarity, { adjectives: string[]; nouns: string[]; verbs: string[] }> = {
-    white: {
-      adjectives: ["cute","soft","adorable","precious","sweet","tiny","innocent","shy","blushing","lovable","huggable","warm","cozy","gentle","pure"],
-      nouns: ["baby","cutie","little one","bunny","kitten","angel","darling","sweetie","princess","pumpkin","bean","cupcake","marshmallow","snugglebug","lovebug"],
-      verbs: ["cuddle","hug","kiss","pet","hold","snuggle","nuzzle","boop","squish","protect","spoil","carry","rock","tuck in","praise"]
+  // ────────────────────── WORD POOLS (Safe & Neutral) ──────────────────────
+  // These pools progress from gentle/new to devoted/intense.
+  private stageWords = {
+    white: { // Initial/Gentle
+      adj: ["cute", "soft", "adorable", "sweet", "tiny", "innocent", "shy", "fresh", "lovable", "new", "cozy", "gentle", "pure"],
+      noun: ["starter", "novice", "little one", "bud", "kitten", "angel", "darling", "project", "beginner", "marshmallow", "snugglebug"],
+      verb: ["learn", "study", "kiss", "pet", "hold", "snuggle", "boop", "squish", "protect", "spoil", "carry", "rock", "guide", "praise"]
     },
-    green: {
-      adjectives: ["good","perfect","precious","amazing","brave","smart","talented","handsome","strong","lovely","obedient","polite","gentle","caring","thoughtful","mature","responsible"],
-      nouns: ["good boy","little bro","prince","treasure","angel","hero","champ","sunshine","star","king","my love","sweetheart","baby boy","puppy","knight","protector","big boy","honey"],
-      verbs: ["praise","reward","protect","guide","teach","spoil","comfort","heal","carry","shield","cherish","worship","support","encourage","love","hug tightly","kiss forehead","headpat"]
+    green: { // Growth/Good
+      adj: ["good", "perfect", "focused", "amazing", "brave", "smart", "talented", "capable", "strong", "lovely", "obedient", "polite", "caring", "thoughtful", "mature", "responsible"],
+      noun: ["good trainee", "team member", "partner", "treasure", "star student", "hero", "champ", "sunshine", "king", "my love", "sweetheart", "baby boy", "puppy", "knight", "protector", "big boy"],
+      verb: ["praise", "reward", "protect", "guide", "teach", "spoil", "comfort", "heal", "carry", "shield", "cherish", "support", "encourage", "love", "hug tightly", "headpat"]
     },
-    purple: {
-      adjectives: ["naughty","slutty","bratty","teasing","horny","lewd","needy","greedy","perverted","flirty","seductive","playful","mischievous","cock-hungry","thirsty","desperate","frisky","touchy","grabby","spoiled","cocky","bold"],
-      nouns: ["princess","sissy","brat","toy","pet","bitch","slut","minx","tease","troublemaker","cockslut","cumdump","fucktoy","doll","kitten","bunny","vixen","whore","good girl","bad girl","prey","prettypet"],
-      verbs: ["tease","bully","spank","grope","grind on","edge","deny","dress up","humiliate","mock","torture","rail","ruin","break","corrupt","train","stretch","breed","mark","own","claim","use"]
+    purple: { // Challenging/Intense
+      adj: ["challenging", "bold", "teasing", "horny", "lewd", "needy", "greedy", "flirty", "seductive", "playful", "mischievous", "cocky", "thirsty", "desperate", "frisky", "touchy"],
+      noun: ["princess", "tester", "brat", "toy", "pet", "minx", "tease", "troublemaker", "doll", "kitten", "bunny", "vixen", "good girl", "bad girl", "prey", "prettypet"],
+      verb: ["tease", "challenge", "spank", "grope", "edge", "deny", "dress up", "mock", "torture", "explore", "ruin", "break", "corrupt", "train", "stretch", "mark", "own", "claim", "use"]
     },
-    golden: {
-      adjectives: ["obedient","perfect","broken","addicted","owned","trained","brainless","caged","feminized","ruined","docile","submissive","devoted","loyal","worshipping","desperate","needy","pathetic","helpless","dependent","adoring","grateful","thankful","blissful","empty-headed"],
-      nouns: ["good girl","fuckdoll","slave","property","wife","pet","bimbo","sissy","cocksleeve","breeding toy","Mommy’s girl","cumdump","whore","princess","doll","toy","angel","babygirl","kitten","puppy","cow","milked pet","locked slut","chastity pet","Mommy’s favorite"],
-      verbs: ["cage","lock","breed","milk","train","break","brainwash","feminize","impregnate","pump full","feed pills","stretch","ruin","own","collar","leash","worship","serve","obey","beg","thank","leak","drip","moan","scream"]
+    golden: { // Submission/Mastered
+      adj: ["obedient", "perfect", "broken", "addicted", "owned", "trained", "docile", "submissive", "devoted", "loyal", "worshipping", "desperate", "needy", "pathetic", "helpless", "dependent", "adoring", "grateful"],
+      noun: ["good subject", "property", "partner", "slave", "pet", "bimbo", "doll", "toy", "angel", "babygirl", "kitten", "puppy", "favorite project", "locked subject"],
+      verb: ["cage", "lock", "train", "break", "brainwash", "feminize", "ruin", "own", "collar", "leash", "worship", "serve", "obey", "beg", "thank", "leak", "drip", "moan", "scream"]
     },
-    red: {
-      adjectives: ["worthless","pathetic","drooling","cum-drunk","brain-broken","ruined","destroyed","mindless","leaking","bloated","swollen","feral","obsessed","addicted","desperate","filthy","disgusting","depraved","perverted","twisted","insane","unhinged","rabid","possessed","cum-addicted","breeding-obsessed","cock-worshipping","sissy-broken","feminized forever","irredeemable"],
-      nouns: ["cum-dump","cocksleeve","breeding sow","sissy bitch","fuckpet","cum-toilet","meat hole","rape toy","public whore","walking womb","cum balloon","brainless slut","drooling mess","cum-rag","semen tank","breeding stock","futa’s wife","personal onahole","cum-bucket","sissy livestock","broken doll","cum-zombie","futa’s property","eternal cum-slut","leaking wife","public cum-rag","cock-worshipper","breeding slave","futa’s cum-vessel","ruined sissy"],
-      verbs: ["destroy","impregnate","pump full","flood","break forever","brain-melt","rape","breed raw","fill to bursting","mark permanently","tattoo","collar","chain","degrade","humiliate","expose","parade","leak in public","force-feed cum","mind-break","shatter","own eternally","corrupt completely","turn into cum-zombie","keep forever","never release","mate-press","belly-bulge","womb-tattoo","ruin completely"]
+    red: { // Permanent/Ruined
+      adj: ["worthless", "pathetic", "drooling", "brain-broken", "ruined", "destroyed", "mindless", "leaking", "swollen", "feral", "obsessed", "addicted", "desperate", "irredeemable", "twisted", "insane", "unhinged"],
+      noun: ["master's tool", "subject", "forever slave", "brainless doll", "pet", "broken subject", "devotee", "property", "favorite project", "cum-zombie", "eternal pet"],
+      verb: ["destroy", "subdue", "break forever", "brain-melt", "claim", "mark permanently", "degrade", "humiliate", "expose", "parade", "mind-break", "shatter", "own eternally", "corrupt completely", "keep forever"]
     }
   };
-
-  constructor(data: InitialData<any, any, StageState, any>) {
-    super(data);
-    const { users, characters, messageState } = data;
-    this.myInternalState = messageState ?? {
-      stage: "white",
-      counters: { white: 0, green: 0, purple: 0, golden: 0, red: 0 },
-      affection: 50,
-      numUsers: Object.keys(users).length,
-      numChars: Object.keys(characters).length
-    };
-  }
-
-  async load(): Promise<Partial<LoadResponse<any, any, StageState>>> {
-    return { success: true };
-  }
 
   private pick<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  private updateStageFromCounters() {
+  constructor(data: InitialData<any, any, MessageStateType, any>) {
+    super(data);
+    this.myInternalState = data.messageState ?? {
+      stage: "white",
+      counters: { white:0, green:0, purple:0, golden:0, red:0 },
+      affection: 50,
+      tasksCompleted: 0,
+      daysOfFocus: 0,
+      projectCompletion: 0,
+      publicEventCount: 0,
+      reportsGenerated: 0,
+      commitmentDate: null,
+      enthusiasmLevel: 0,
+      hoursSinceLastMilestone: 0
+    };
+  }
+
+  async load(): Promise<Partial<LoadResponse<any, any, MessageStateType>>> {
+    // Stage load logic goes here if needed, but for now, it just confirms success.
+    return { success: true };
+  }
+
+  private updateStage(): void {
+    // Logic to determine the current Rarity stage based on total interactions.
     const total =
       this.myInternalState.counters.white +
       this.myInternalState.counters.green +
@@ -80,53 +95,70 @@ export class Stage extends StageBase<any, any, StageState, any> {
     else this.myInternalState.stage = "white";
   }
 
-  private updateAffection(content: string) {
-    const lower = content.toLowerCase();
-    const compliments = ["cute","pretty","beautiful"];
-    const flirts = ["sexy","hot"];
-    const rude = ["stupid","bitch"];
-
+  private updateAffection(msg: string) {
+    const lower = msg.toLowerCase();
+    const compliments = ["cute","beautiful","sweet","good","great"];
+    const flirts = ["hot","sexy","tease","playful"];
+    const rude = ["stupid","idiot","bad","fail"];
     let points = 0;
-    compliments.some(w => lower.includes(w)) && (points += 3);
-    flirts.some(w => lower.includes(w)) && (points += 5);
-    rude.some(w => lower.includes(w)) && (points -= 4);
+    // Positive keywords add points
+    compliments.some(w=>lower.includes(w))&&(points+=3);
+    flirts.some(w=>lower.includes(w))&&(points+=5);
+    // Negative keywords subtract points
+    rude.some(w=>lower.includes(w))&&(points-=4);
 
+    // Update affection, ensuring it stays between 0 and 100.
     this.myInternalState.affection = Math.max(0, Math.min(100, this.myInternalState.affection + points));
   }
 
-  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<any, StageState>>> {
-    const msg = userMessage.content;
+  async beforePrompt(userMessage: Message): Promise<Partial<StageResponse<any, MessageStateType>>> {
+    const msg = userMessage.content.toLowerCase();
 
-    // Increment current stage counter
-    const currentStage = this.myInternalState.stage;
-    this.myInternalState.counters[currentStage] += 1;
+    // Stage counter increment (tracking interactions for progression)
+    const curStage = this.myInternalState.stage;
+    this.myInternalState.counters[curStage]++;
+    this.updateStage();
 
-    // Update stage
-    this.updateStageFromCounters();
+    this.updateAffection(userMessage.content);
 
-    // Update affection
-    this.updateAffection(msg);
-
-    // Secret lock until purple
-    if (!["purple","golden","red"].includes(this.myInternalState.stage) && msg.toLowerCase().includes("secret")) {
-      userMessage.content = "I can't tell you that yet.";
+    // Secret lock until purple stage for advanced topics
+    if(!["purple","golden","red"].includes(this.myInternalState.stage) && msg.includes("secret")) {
+      userMessage.content = "I can't reveal that advanced topic yet. We need more work together.";
     }
 
-    // Inject random stage-flavored line
+    // Random stage-flavored line injection
     const words = this.stageWords[this.myInternalState.stage];
-    if (Math.random() < 0.6) {
-      const line = `${this.pick(words.adjectives)} ${this.pick(words.nouns)}, I just want to ${this.pick(words.verbs)} you right now~`;
-      userMessage.content += `\n${line}`;
-    }
+    const line = `(${this.pick(words.adj)}) ${this.pick(words.noun)}, let's ${this.pick(words.verb)}!`;
+    if(Math.random()<0.5) userMessage.content += `\n${line}`;
 
+    // ── Safe counter-based prompt injections ──
+    if(this.myInternalState.tasksCompleted!>4)
+      userMessage.content += "\nYour effort level feels high from the latest activity.";
+
+    if(this.myInternalState.daysOfFocus!>60)
+      userMessage.content += "\nYour dedication to the tasks has been in place for a long time.";
+
+    if(this.myInternalState.projectCompletion!>=20)
+      userMessage.content += "\nYou feel a notable sense of accomplishment when you move.";
+
+    if(this.myInternalState.publicEventCount!>=10)
+      userMessage.content += `\nPublic presentations have increased; total reports: ${this.myInternalState.reportsGenerated}.`;
+
+    if(this.myInternalState.commitmentDate!==null)
+      userMessage.content += `\nBeen in your current role commitment for ${curStage} stage messages.`;
+
+    // Return the updated state
     return { messageState: this.myInternalState };
   }
 
-  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, StageState>>> {
+  async afterResponse(botMessage: Message): Promise<Partial<StageResponse<any, MessageStateType>>> {
+    // Logic to run after the main AI responds (if needed)
     return { messageState: this.myInternalState };
   }
 
+  // The render method is required but often empty for backend-focused stages
   render(): ReactElement {
     return <div></div>;
   }
 }
+

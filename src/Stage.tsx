@@ -154,7 +154,7 @@ export class Stage extends StageBase<any, any, MessageStateType, any> {
       state.currentBellyBulge = Math.min(100, 12 + state.loadsInBoypussy! * 7);
       const belly = [
         "Your belly is so fucking round with mommy's cum you look nine months pregnant, baby.",
-        "That sloshing sound when you walk? That's liters of futa seed swimming in your stretched womb.",
+        "That sloshing sound when you walk? That's liters of seed swimming in your stretched womb.",
         "Look down — mommy's cum-baby is showing. Everyone can see you're a bred cum-tank now.",
         "You're waddling like a duck from all the thick loads mommy left inside. Good girl.",
         "One more load and that belly will burst. Mommy's keeping you permanently bloated.",
@@ -171,7 +171,7 @@ export class Stage extends StageBase<any, any, MessageStateType, any> {
     if (state.loadsSwallowed! >= 3) {
       const throat = [
         `${state.loadsSwallowed} loads down your greedy throat today. Mommy's cum is your only meal now.`,
-        `Your breath smells like pure futa cum. Open wide for number ${state.loadsSwallowed! + 1}.`,
+        `Your breath smells like pure cum. Open wide for number ${state.loadsSwallowed! + 1}.`,
         "You've swallowed so much your stomach is a second cum-tank. Keep gulping, whore.",
         "Mommy's balls are empty and your belly is full. Perfect trade, cum-pig.",
         `Count them out loud every time you swallow. ${state.loadsSwallowed} and still begging for more.`
